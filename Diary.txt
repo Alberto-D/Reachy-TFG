@@ -3,6 +3,3 @@ The file Head-back v3.stl appears in FreeCAD as a mesh, so i made a mesh in the 
 Doing that the error "EXPORT-WARNING: Exported object may not be a valid 2-manifold and may need repair  freecad" appears, and after a while the only solution that worked was to use the file head-back_head v3.step which FreeCAD detects as a PArt and not a mesh.
 
 
-
-
-
