@@ -2,3 +2,7 @@ To start the TFG i have to print Reachys head, first i use FreeCAD to cut a piec
 The file Head-back v3.stl appears in FreeCAD as a mesh, so i made a mesh in the form of a cube to later perform the boolean AND operation an the just  the part of the head that i need (the attachment of the motors).
 Doing that the error "EXPORT-WARNING: Exported object may not be a valid 2-manifold and may need repair  freecad" appears, and after a while the only solution that worked was to use the file head-back_head v3.step which FreeCAD detects as a PArt and not a mesh.
 
+
+
+
+
