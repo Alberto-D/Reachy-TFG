@@ -1,0 +1,4 @@
+<launch>
+  <node name="camera_subscriber" pkg="usb_cam" type="camera_subscriber" />
+  
+</launch>
