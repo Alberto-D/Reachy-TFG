@@ -16,7 +16,7 @@ pkg_check_modules(swscale libswscale REQUIRED)
 
 add_message_files(
   FILES
-  SectorMsg.msg
+  MotorMsg.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs )

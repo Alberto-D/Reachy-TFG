@@ -45,7 +45,13 @@ ros::Publisher action_pub;
 // List of actions to publish in /action
 #define FOLLOW_PERSON    1
 #define FOLLOW_CUBE    2
-#define BYE    3
+#define TALK_MODE    3
+
+#define BYE    4
+
+#define NOD    10
+#define DENY    20
+
 
 
 
@@ -60,6 +66,9 @@ class ExampleDF: public DialogInterface{
       this->registerCallback(std::bind(&ExampleDF::byeCB, this, ph::_1),"bye");
       this->registerCallback(std::bind(&ExampleDF::follow_personCB, this, ph::_1),"Follow person");
       this->registerCallback(std::bind(&ExampleDF::follow_cubeCB, this, ph::_1),"Follow cube");
+      this->registerCallback(std::bind(&ExampleDF::talk_modeCB, this, ph::_1),"Lets talk");
+      this->registerCallback(std::bind(&ExampleDF::question_aliveCB, this, ph::_1),"Question alive");
+
 
     }
 
@@ -75,7 +84,8 @@ class ExampleDF: public DialogInterface{
     void follow_personCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("[Follow person] following: intent [%s]", result.intent.c_str());
       gb_dialog::ActionMsg msg;
-      msg.action = FOLLOW_PERSON;
+      msg.mode = FOLLOW_PERSON;
+      msg.action = "follow";
       action_pub.publish(msg);
       speak(result.fulfillment_text);
     }
@@ -85,15 +95,36 @@ class ExampleDF: public DialogInterface{
       gb_dialog::ActionMsg msg;
       auto data =  result.parameters[0].value[0];
       msg.data= data.c_str();
-      msg.action = FOLLOW_CUBE;
+      msg.mode = FOLLOW_CUBE;
+      msg.action = "follow";
+
       action_pub.publish(msg);
       speak(result.fulfillment_text);
     }
 
+    void talk_modeCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("[ExampleDF] talking: intent [%s]", result.intent.c_str());
+      gb_dialog::ActionMsg msg;
+      msg.mode = TALK_MODE;
+      action_pub.publish(msg);
+      speak(result.fulfillment_text);
+    }
+    void question_aliveCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("Alive question %s", result.intent.c_str());
+      gb_dialog::ActionMsg msg;
+      msg.mode = TALK_MODE;
+      msg.action = "deny";
+      action_pub.publish(msg);
+      speak(result.fulfillment_text);
+    }
+
+
+
     void byeCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("[ExampleDF] welcomeIntentCB: intent [%s]", result.intent.c_str());
       gb_dialog::ActionMsg msg;
-      msg.action = BYE;
+      msg.mode = BYE;
+      msg.action = "off";
       action_pub.publish(msg);
       speak(result.fulfillment_text);
     }
@@ -106,11 +137,7 @@ class ExampleDF: public DialogInterface{
 int main(int argc, char** argv){
   ros::init(argc, argv, "example_df_node");
   gb_dialog::ExampleDF forwarder;
-  // forwarder.listen();
-  // ros::spin();
-  // Para que escuche continuamente se mete en un while con ros::spineOnce
   ros::Rate loop_rate(10);
-
   ros::NodeHandle action_node;
   action_pub = action_node.advertise<gb_dialog::ActionMsg>("action", 1000);
 
