@@ -26,6 +26,7 @@
 #include <math.h>
 #include <string.h>
 
+#include <gb_dialog/DialogInterface.h>
 
 
 
@@ -33,10 +34,11 @@
 #define FOLLOW_CUBE    2
 #define TALK_MODE    3
 
-char follow[] = "follow", talk[] = "talk", deny[] = "deny";
+char follow[] = "follow", talk[] = "talk", deny[] = "deny",nod[] = "nod";
 
 using namespace std;
 using namespace cv;
+namespace ph = std::placeholders;
 
 int64 face_image_processing(const cv::Mat in_image);
 int64 color_image_processing(const cv::Mat in_image);
@@ -49,7 +51,7 @@ Mat frame, image;
 Scalar color = Scalar(255, 0, 0);
 
 // To change the mode between follow person and follow cube, 
-int image_mode = FOLLOW_PERSON;
+int image_mode = 3;
 String cube_color = "green";
 
 // Sector publisher
@@ -59,6 +61,8 @@ ros::Subscriber action_sub;
 
 int64 face_image_processing(const cv::Mat in_image);
 int64 cube_image_processing(const cv::Mat in_image);
+
+
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg){
   try{
@@ -81,19 +85,19 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg){
 // Subscribes to the /action topic 
 void actionCallback(const gb_dialog::ActionMsg::ConstPtr& msg) {
 
-  
-  int result;
-
   image_mode = msg->mode;
-  // comparing strings str1 and str2
+  // Comparing strings to know what to do
   if(strcmp(follow, msg->action.c_str())== 0){
-    cube_color = msg->data;
-    ROS_INFO("AEl modo es     [%s] color es %s", follow, cube_color.c_str());
-  }else if(strcmp(deny, msg->action.c_str())== 0){
-    ROS_INFO("AEl modo es     [%s]", deny);
-    usb_cam::MotorMsg msg;
-    msg.motor_action = "deny";
-    motor_msg_pub.publish(msg);
+    // If the data is empty, the last one saved is used
+    if(strlen(msg->data.c_str())>1)
+      cube_color = msg->data;
+    
+    ROS_INFO("El modo es     [%s] color es %s", follow, cube_color.c_str());
+  }else{
+    ROS_INFO("El modo es     [%s]", msg->action.c_str());
+    usb_cam::MotorMsg msg2;
+    msg2.motor_action =  msg->action.c_str();
+    motor_msg_pub.publish(msg2);
 
   }
 }
@@ -163,9 +167,7 @@ int64 face_image_processing(const cv::Mat in_image){
     y2 = faces[biggest_face].y + faces[biggest_face].height/2;
     center.x = x2;
     center.y = y2;
-  
-    // Check position with last point to avoid false detections.
-    
+      
     if((0<x2)&&(x2<out_image.cols/3)){
       x_sector = 1;
     }else if((out_image.cols/3<x2)&&(x2<2*out_image.cols/3)){
@@ -205,7 +207,6 @@ int64 face_image_processing(const cv::Mat in_image){
 
 const String window_detection_name = "Object Detection";
 
-
 // Limits to detect the colors
 cv::Scalar yellowLow = cv::Scalar(20, 100, 100);
 cv::Scalar yellowHigh = cv::Scalar(30, 255, 255);
@@ -213,7 +214,7 @@ cv::Scalar yellowHigh = cv::Scalar(30, 255, 255);
 cv::Scalar redLow = cv::Scalar(120, 160, 90);
 cv::Scalar redHigh = cv::Scalar(180, 255, 255);
 
-cv::Scalar blueLow = cv::Scalar(90, 120, 70);
+cv::Scalar blueLow = cv::Scalar(90, 90, 70);
 cv::Scalar blueHigh = cv::Scalar(128, 255, 255);
 
 cv::Scalar greenLow = cv::Scalar(40, 40, 40);
@@ -229,23 +230,18 @@ int64 cube_image_processing(const cv::Mat in_image){
   std::vector<Rect> faces;
 
   namedWindow(window_detection_name);
-  ROS_INFO("A buscar el cubo   %s", cube_color.c_str());
-
   cv::Scalar ScalarLow = blueLow;
   cv::Scalar ScalarHigh = blueHigh;
 
 
-// Select the color of the cube to follow
+  // Select the color of the cube to follow
   if(strcmp("yellow", cube_color.c_str())== 0){
-    ROS_INFO("ABUSCO AMARILLO");
     ScalarLow = yellowLow;
     ScalarHigh = yellowHigh;
   }else if(strcmp("blue", cube_color.c_str())== 0){
-    ROS_INFO("ABUSCO azul");
     ScalarLow = blueLow;
     ScalarHigh = blueHigh;
   } else if(strcmp("green", cube_color.c_str())== 0){
-    ROS_INFO("ABUSCO AMARILLO");
     ScalarLow = greenLow;
     ScalarHigh = greenHigh;
   }else{return 0;}
@@ -273,60 +269,75 @@ int64 cube_image_processing(const cv::Mat in_image){
   // Selects only the biggest contour to avoid error in lighting
   for (int i = 0; i< contours.size(); i++){
     double area = contourArea(contours[i]);
-    if (area > maxArea){
-      maxArea = area;
-      savedContour = i;
+    // The area vaires must be  150 and 10000 to avoid false detections
+      if((150 < int(area))&&(int(area)<10000)){
+      if (area > maxArea){
+        maxArea = area;
+        savedContour = i;
+      }
     }
-}
-
-//Create mask
-drawContours(out_image, contours, savedContour, Scalar(0, 255, 0), 2);
-
-
-  Point center;
-  int64 x_sector = -100;
-  int64 y_sector = -100;
-
-  contours[savedContour];
-
-  //Draw circles and detect sector
-  int x2 = contours[savedContour][0].x ;
-  int y2 = contours[savedContour][0].y ;
-  center.x = x2;
-  center.y = y2;
-
-   
-  if((0<x2)&&(x2<out_image.cols/3)){
-    x_sector = 1;
-  }else if((out_image.cols/3<x2)&&(x2<2*out_image.cols/3)){
-    x_sector = 2;
-  }else{
-    x_sector = 3;
   }
-  if((0<y2)&&(y2<out_image.rows/3)){
-    y_sector = 1;
-  }else if((out_image.rows/3<y2)&&(y2<2*out_image.rows/3)){
-    y_sector = 2;
-  }else{
-    y_sector = 3;
+  if(contours.size()==0){
+      //gb_dialog::ExampleDF forwarder;
+
+    String a = "no cube";
+    //forwarder.say(a);
+         
   }
 
-  circle( out_image, center, 15, color, 3, 8, 0 );
+  if((150 < int(maxArea))&&(int(maxArea)<10000)){
+    ROS_INFO("max area es  %d countornos ", int(maxArea)); 
+    
 
-  // motor_msg_pub.publish(msg);
-  usb_cam::MotorMsg msg;
-  msg.x_sector = x_sector;
-  msg.y_sector = y_sector;
+    //Create mask
+    drawContours(out_image, contours, savedContour, Scalar(0, 255, 0), 2);
 
-  msg.x=x2;
-  msg.y=y2;
-  msg.motor_action = "follow";
 
-  motor_msg_pub.publish(msg);
+    Point center;
+    int64 x_sector = -100;
+    int64 y_sector = -100;
+
+    contours[savedContour];
+
+    //Draw circles and detect sector
+    int x2 = contours[savedContour][0].x ;
+    int y2 = contours[savedContour][0].y ;
+    center.x = x2;
+    center.y = y2;
+
+    
+    if((0<x2)&&(x2<out_image.cols/3)){
+      x_sector = 1;
+    }else if((out_image.cols/3<x2)&&(x2<2*out_image.cols/3)){
+      x_sector = 2;
+    }else{
+      x_sector = 3;
+    }
+    if((0<y2)&&(y2<out_image.rows/3)){
+      y_sector = 1;
+    }else if((out_image.rows/3<y2)&&(y2<2*out_image.rows/3)){
+      y_sector = 2;
+    }else{
+      y_sector = 3;
+    }
+
+    circle( out_image, center, 15, color, 3, 8, 0 );
+
+    // motor_msg_pub.publish(msg);
+    usb_cam::MotorMsg msg;
+    msg.x_sector = x_sector;
+    msg.y_sector = y_sector;
+
+    msg.x=x2;
+    msg.y=y2;
+    msg.motor_action = "follow";
+
+    motor_msg_pub.publish(msg);
+  }
 
   // Show image in a different window
       cv::imshow("out_image",out_image);
-  cv::waitKey(3);
+      cv::waitKey(3);
   return 1;
 }
 

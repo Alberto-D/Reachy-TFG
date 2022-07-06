@@ -4,7 +4,7 @@ project(usb_cam)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS cv_bridge image_transport roscpp std_msgs std_srvs sensor_msgs camera_info_manager message_generation)
+find_package(catkin REQUIRED COMPONENTS cv_bridge image_transport roscpp std_msgs std_srvs sensor_msgs camera_info_manager message_generation sound_play actionlib actionlib_msgs)
 
 ## pkg-config libraries
 find_package(OpenCV)
@@ -31,6 +31,8 @@ generate_messages(DEPENDENCIES std_msgs )
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS roscpp dialogflow_ros_msgs actionlib_msgs
+  DEPENDS
 )
 
 
@@ -68,7 +70,7 @@ target_link_libraries( camera_publisher
 # add the subscriber example
 add_executable(camera_subscriber src/camera_subscriber.cpp)
 add_dependencies(camera_subscriber external_package_generate_messages_cpp message_runtime ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(camera_subscriber ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(camera_subscriber ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} gb_dialog)
 
 #############
 ## Install ##

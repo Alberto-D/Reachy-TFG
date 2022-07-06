@@ -39,7 +39,7 @@
 #include <string>
 #include <std_msgs/Int64.h>
 #include "gb_dialog/ActionMsg.h"
-
+#include <ctime>
 
 ros::Publisher action_pub;
 // List of actions to publish in /action
@@ -52,6 +52,7 @@ ros::Publisher action_pub;
 #define NOD    10
 #define DENY    20
 
+int actual_mode = 0;
 
 
 
@@ -68,17 +69,59 @@ class ExampleDF: public DialogInterface{
       this->registerCallback(std::bind(&ExampleDF::follow_cubeCB, this, ph::_1),"Follow cube");
       this->registerCallback(std::bind(&ExampleDF::talk_modeCB, this, ph::_1),"Lets talk");
       this->registerCallback(std::bind(&ExampleDF::question_aliveCB, this, ph::_1),"Question alive");
+      this->registerCallback(std::bind(&ExampleDF::question_robotCB, this, ph::_1),"Question robot");
+      this->registerCallback(std::bind(&ExampleDF::position_leftCB, this, ph::_1),"Position left");
+      this->registerCallback(std::bind(&ExampleDF::position_rightCB, this, ph::_1),"Position right");
 
-
+      this->registerCallback(std::bind(&ExampleDF::jokeCB, this, ph::_1),"Joke");
+      this->registerCallback(std::bind(&ExampleDF::Time_questionCB, this, ph::_1),"Time");
+      this->registerCallback(std::bind(&ExampleDF::How_questionCB, this, ph::_1),"How are you");
+      this->registerCallback(std::bind(&ExampleDF::Where_questionCB, this, ph::_1),"Where are you");
+      this->registerCallback(std::bind(&ExampleDF::FactCB, this, ph::_1),"Facts");
     }
 
     void noIntentCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("[ExampleDF] noIntentCB: intent [%s]", result.intent.c_str());
     }
+    void How_questionCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("[ExampleDF] how: intent [%s]", result.intent.c_str());
+      speak(result.fulfillment_text);
+    }
+    void Where_questionCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("[ExampleDF] how: intent [%s]", result.intent.c_str());
+      speak(result.fulfillment_text);
+    }
+    void FactCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("[ExampleDF] FactCB: intent [%s]", result.intent.c_str());
+      speak(result.fulfillment_text);
+    }
 
+    void Time_questionCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("[ExampleDF] welcomeIntentCB: intent [%s]", result.intent.c_str());
+      time_t now = time(0);
+      tm *ltm = localtime(&now);
+      std::string time = " It is " + std::to_string(ltm->tm_hour) + "hours and " + std::to_string(ltm->tm_min) + " minutes";
+      speak(time);
+    }
     void welcomeIntentCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("[ExampleDF] welcomeIntentCB: intent [%s]", result.intent.c_str());
+      gb_dialog::ActionMsg msg;
+      msg.mode = BYE;
+      msg.action = "on";
+      action_pub.publish(msg);
+      sleep(2);
       speak(result.fulfillment_text);
+      actual_mode = msg.mode;
+    }
+    void byeCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("[ExampleDF] bye: intent [%s]", result.intent.c_str());
+      gb_dialog::ActionMsg msg;
+      msg.mode = BYE;
+      msg.action = "off";
+      speak(result.fulfillment_text);
+      sleep(1);
+      action_pub.publish(msg);
+      actual_mode = msg.mode;
     }
     
     void follow_personCB(dialogflow_ros_msgs::DialogflowResult result){
@@ -88,8 +131,8 @@ class ExampleDF: public DialogInterface{
       msg.action = "follow";
       action_pub.publish(msg);
       speak(result.fulfillment_text);
+      actual_mode = msg.mode;
     }
-
     void follow_cubeCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("[Follow cube] following  [%s]", result.intent.c_str());
       gb_dialog::ActionMsg msg;
@@ -97,17 +140,17 @@ class ExampleDF: public DialogInterface{
       msg.data= data.c_str();
       msg.mode = FOLLOW_CUBE;
       msg.action = "follow";
-
       action_pub.publish(msg);
       speak(result.fulfillment_text);
+      actual_mode = msg.mode;
     }
-
     void talk_modeCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("[ExampleDF] talking: intent [%s]", result.intent.c_str());
       gb_dialog::ActionMsg msg;
       msg.mode = TALK_MODE;
       action_pub.publish(msg);
       speak(result.fulfillment_text);
+      actual_mode = msg.mode;
     }
     void question_aliveCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("Alive question %s", result.intent.c_str());
@@ -115,18 +158,49 @@ class ExampleDF: public DialogInterface{
       msg.mode = TALK_MODE;
       msg.action = "deny";
       action_pub.publish(msg);
-      speak(result.fulfillment_text);
+      actual_mode = msg.mode;
     }
-
-
-
-    void byeCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] welcomeIntentCB: intent [%s]", result.intent.c_str());
+     void question_robotCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("Robot question %s", result.intent.c_str());
       gb_dialog::ActionMsg msg;
-      msg.mode = BYE;
-      msg.action = "off";
+      msg.mode = FOLLOW_PERSON;
+      msg.action = "nod";
       action_pub.publish(msg);
+      actual_mode = msg.mode;
+    }
+    // If you tell Reachy you are at his left, it moves and keep searching
+    void position_leftCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("On your left, mode es %d",actual_mode );
+      int last_mode = actual_mode;
+      gb_dialog::ActionMsg msg;
+      msg.action = "go_left";
+      action_pub.publish(msg);
+      sleep(2);
+      msg.mode = last_mode;
+      msg.action = "follow";
+      action_pub.publish(msg);
+    }
+    void position_rightCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("On your right, mode es %d",actual_mode );
+      int last_mode = actual_mode;
+      gb_dialog::ActionMsg msg;
+      msg.action = "go_right";
+      action_pub.publish(msg);
+      sleep(2);
+      msg.mode = last_mode;
+      msg.action = "follow";
+      action_pub.publish(msg);
+    }
+  
+    void jokeCB(dialogflow_ros_msgs::DialogflowResult result){
+      ROS_INFO("[ExampleDF] joke: intent [%s]", result.intent.c_str());
+      gb_dialog::ActionMsg msg;
+      msg.mode = TALK_MODE;
+      msg.action = "think";
+      action_pub.publish(msg);
+      sleep(3);
       speak(result.fulfillment_text);
+      actual_mode = msg.mode;
     }
 
   private:
