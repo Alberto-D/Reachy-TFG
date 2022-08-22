@@ -9,6 +9,7 @@
     <arg name="config_file" value="$(arg config_file)"/>
   </include>
   
-    <node name="Reachy_speech_node" pkg="Reachy_speech_node" type="Reachy_speech_node" output="screen"/>
+    <node name="camera_publisher" pkg="usb_cam" type="camera_publisher" />
+  
   
 </launch>

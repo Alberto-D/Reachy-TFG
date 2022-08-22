@@ -70,9 +70,7 @@ void sector_movement(const usb_cam::MotorMsg::ConstPtr& msg  ){
 
 }
 
-
-
-// Subscribes to the /motor_msg topic to move the motors so that they allways point to the face
+// Subscribes to the /motor_msg topic to move the motors so that they move acording to the recived action 
 void motor_msg_Callback(const usb_cam::MotorMsg::ConstPtr& msg) {
   ros::Rate timer(5);
   // Control to follow an objective
@@ -97,8 +95,7 @@ void motor_msg_Callback(const usb_cam::MotorMsg::ConstPtr& msg) {
     position_msg.id = 1;
     position_msg.position = position;
     position_pub.publish(position_msg);
-
-    // Nod
+  // Nod
   }else if(strcmp("nod", msg->motor_action.c_str())== 0){
     dynamixel_sdk_examples::SetPosition position_msg;
     int position = get_position(2);
@@ -113,54 +110,53 @@ void motor_msg_Callback(const usb_cam::MotorMsg::ConstPtr& msg) {
     position_msg.id = 2;
     position_msg.position = position;
     position_pub.publish(position_msg);
-    //Turn off
+  //Turn off
   }else if(strcmp("off", msg->motor_action.c_str())== 0){
     dynamixel_sdk_examples::SetPosition position_msg;
     position_msg.id = 1;
     position_msg.position = 500;
     position_pub.publish(position_msg);
-    timer.sleep();
-    timer.sleep();
+
+    dynamixel_sdk_examples::SetPosition position_msg1;
+    dynamixel_sdk_examples::SetPosition position_msg2;
+    position_msg1.id = 4;
+    position_msg1.position = 700;
+    position_msg2.id = 5;
+    position_msg2.position = 350;
+    position_pub.publish(position_msg1);
+    position_pub.publish(position_msg2);
+
+
     timer.sleep();
     position_msg.id = 2;
     position_msg.position = 700;
-    // Turn on
     position_pub.publish(position_msg);
+
+
+
+  // Turn on
   }else if(strcmp("on", msg->motor_action.c_str())== 0){
     dynamixel_sdk_examples::SetPosition position_msg;
     position_msg.id = 1;
     position_msg.position = 500;
     position_pub.publish(position_msg);
-    timer.sleep();
-    timer.sleep();
+
+    dynamixel_sdk_examples::SetPosition position_msg1;
+    dynamixel_sdk_examples::SetPosition position_msg2;
+    position_msg1.id = 4;
+    position_msg1.position = 50;
+    position_msg2.id = 5;
+    position_msg2.position = 900;
+    position_pub.publish(position_msg1);
+    position_pub.publish(position_msg2);
+
     timer.sleep();
     position_msg.id = 2;
     position_msg.position = 500;
     position_pub.publish(position_msg);
 
 
-  //    }else if(strcmp("off", msg->motor_action.c_str())== 0){
-  //   dynamixel_sdk_examples::SetPosition position_msg;
-  //   position_msg.id = 1;
-  //   position_msg.position = 300;
-  //   position_pub.publish(position_msg);
-  //   timer.sleep();
-    
-  //   position_msg.id = 2;
-  //   position_msg.position = 500;
-  //   position_pub.publish(position_msg);
-  //   // Turn on
-  // }else if(strcmp("on", msg->motor_action.c_str())== 0){
-
-  //   dynamixel_sdk_examples::SetPosition position_msg;
-  //   position_msg.id = 1;
-  //   position_msg.position = 800;
-  //   position_pub.publish(position_msg);
-  //   timer.sleep();
-    
-  //   position_msg.id = 2;
-  //   position_msg.position = 500;
-  //   position_pub.publish(position_msg);
+  // Think
   }else if(strcmp("think", msg->motor_action.c_str())== 0){
     int position1 = get_position(1);
     int position2 = get_position(2);
@@ -171,28 +167,46 @@ void motor_msg_Callback(const usb_cam::MotorMsg::ConstPtr& msg) {
     position_msg.id = 2;
     position_msg.position = 400;
     position_pub.publish(position_msg);
-    sleep(1);
+    sleep(2);
     position_msg.id = 1;
     position_msg.position = position1;
     position_pub.publish(position_msg);
     position_msg.id = 2;
     position_msg.position = position2;
     position_pub.publish(position_msg);
-
-
+  // Look left to locate something
   }else if(strcmp("go_left", msg->motor_action.c_str())== 0){
     dynamixel_sdk_examples::SetPosition position_msg;
     int position1 = get_position(1);
     position_msg.id = 1;
     position_msg.position = position1 + 100;
     position_pub.publish(position_msg);
-    
+  // Look rigth to locate something
   }else if(strcmp("go_right", msg->motor_action.c_str())== 0){
     dynamixel_sdk_examples::SetPosition position_msg;
     int position1 = get_position(1);
     position_msg.id = 1;
     position_msg.position = position1 - 100;
     position_pub.publish(position_msg);
+  }else if(strcmp("sad", msg->motor_action.c_str())== 0){
+    dynamixel_sdk_examples::SetPosition position_msg1;
+    dynamixel_sdk_examples::SetPosition position_msg2;
+    position_msg1.id = 4;
+    //Values to control the position ogf the anthenas
+    position_msg1.position = 900;
+    position_msg2.id = 5;
+    position_msg2.position = 200;
+    position_pub.publish(position_msg1);
+    position_pub.publish(position_msg2);
+  }else if(strcmp("happy", msg->motor_action.c_str())== 0){
+    dynamixel_sdk_examples::SetPosition position_msg1;
+    dynamixel_sdk_examples::SetPosition position_msg2;
+    position_msg1.id = 4;
+    position_msg1.position = 300;
+    position_msg2.id = 5;
+    position_msg2.position = 800;
+    position_pub.publish(position_msg1);
+    position_pub.publish(position_msg2);
   }
 }
 
@@ -201,7 +215,7 @@ void motor_msg_Callback(const usb_cam::MotorMsg::ConstPtr& msg) {
 int main(int argc, char **argv) {
     int frequency;
 
-    ros::init(argc, argv, "motors");
+    ros::init(argc, argv, "motors_node");
     ros::NodeHandle nh;
 
     position_pub = nh.advertise<dynamixel_sdk_examples::SetPosition>("/set_position", 1000);

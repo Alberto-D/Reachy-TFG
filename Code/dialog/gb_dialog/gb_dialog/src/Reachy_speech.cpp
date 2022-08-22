@@ -42,6 +42,7 @@
 #include <ctime>
 
 ros::Publisher action_pub;
+
 // List of actions to publish in /action
 #define FOLLOW_PERSON    1
 #define FOLLOW_CUBE    2
@@ -51,6 +52,8 @@ ros::Publisher action_pub;
 
 #define NOD    10
 #define DENY    20
+#define SAD    30
+#define HAPPY    40
 
 int actual_mode = 0;
 
@@ -78,7 +81,33 @@ class ExampleDF: public DialogInterface{
       this->registerCallback(std::bind(&ExampleDF::How_questionCB, this, ph::_1),"How are you");
       this->registerCallback(std::bind(&ExampleDF::Where_questionCB, this, ph::_1),"Where are you");
       this->registerCallback(std::bind(&ExampleDF::FactCB, this, ph::_1),"Facts");
+      
+      this->registerCallback(std::bind(&ExampleDF::SadCB, this, ph::_1),"Sad");
+      this->registerCallback(std::bind(&ExampleDF::HappyCB, this, ph::_1),"Happy");
     }
+
+
+    void SadCB(dialogflow_ros_msgs::DialogflowResult result){
+      gb_dialog::ActionMsg msg;
+      msg.mode = TALK_MODE;
+      msg.action = "sad";
+      action_pub.publish(msg);
+      actual_mode = msg.mode;
+      ROS_INFO("[ExampleDF] SadCB: intent [%s]", result.intent.c_str());
+      speak(result.fulfillment_text);
+    }
+    void HappyCB(dialogflow_ros_msgs::DialogflowResult result){
+      gb_dialog::ActionMsg msg;
+      msg.mode = TALK_MODE;
+      msg.action = "happy";
+      action_pub.publish(msg);
+      actual_mode = msg.mode;
+      ROS_INFO("[ExampleDF] HappyCB: intent [%s]", result.intent.c_str());
+      speak(result.fulfillment_text);
+    }
+
+
+
 
     void noIntentCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("[ExampleDF] noIntentCB: intent [%s]", result.intent.c_str());
@@ -180,6 +209,8 @@ class ExampleDF: public DialogInterface{
       msg.action = "follow";
       action_pub.publish(msg);
     }
+      // If you tell Reachy you are at his right, it moves and keep searching
+
     void position_rightCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("On your right, mode es %d",actual_mode );
       int last_mode = actual_mode;
@@ -209,7 +240,7 @@ class ExampleDF: public DialogInterface{
 }  // namespace gb_dialog
 
 int main(int argc, char** argv){
-  ros::init(argc, argv, "example_df_node");
+  ros::init(argc, argv, "Reachy_speech_node");
   gb_dialog::ExampleDF forwarder;
   ros::Rate loop_rate(10);
   ros::NodeHandle action_node;

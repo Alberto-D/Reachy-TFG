@@ -91,7 +91,6 @@ void actionCallback(const gb_dialog::ActionMsg::ConstPtr& msg) {
     // If the data is empty, the last one saved is used
     if(strlen(msg->data.c_str())>1)
       cube_color = msg->data;
-    
     ROS_INFO("El modo es     [%s] color es %s", follow, cube_color.c_str());
   }else{
     ROS_INFO("El modo es     [%s]", msg->action.c_str());
@@ -111,7 +110,7 @@ int main(int argc, char **argv){
       cv::namedWindow("out_image");
   cv::startWindowThread();
 
-  ros::init(argc, argv, "image_listener");
+  ros::init(argc, argv, "image_listener_node");
   ros::NodeHandle nh;
   
   image_transport::ImageTransport it(nh);
@@ -211,7 +210,7 @@ const String window_detection_name = "Object Detection";
 cv::Scalar yellowLow = cv::Scalar(20, 100, 100);
 cv::Scalar yellowHigh = cv::Scalar(30, 255, 255);
 
-cv::Scalar redLow = cv::Scalar(120, 160, 90);
+cv::Scalar redLow = cv::Scalar(120, 130, 60);
 cv::Scalar redHigh = cv::Scalar(180, 255, 255);
 
 cv::Scalar blueLow = cv::Scalar(90, 90, 70);
@@ -233,7 +232,6 @@ int64 cube_image_processing(const cv::Mat in_image){
   cv::Scalar ScalarLow = blueLow;
   cv::Scalar ScalarHigh = blueHigh;
 
-
   // Select the color of the cube to follow
   if(strcmp("yellow", cube_color.c_str())== 0){
     ScalarLow = yellowLow;
@@ -244,8 +242,10 @@ int64 cube_image_processing(const cv::Mat in_image){
   } else if(strcmp("green", cube_color.c_str())== 0){
     ScalarLow = greenLow;
     ScalarHigh = greenHigh;
+  }else if(strcmp("red", cube_color.c_str())== 0){
+    ScalarLow = redLow;
+    ScalarHigh = redHigh;
   }else{return 0;}
-
 
   Mat frame, frame_HSV, frame_threshold;
   // Convert from BGR to HSV colorspace
