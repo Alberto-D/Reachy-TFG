@@ -9,7 +9,7 @@
     <arg name="config_file" value="$(arg config_file)"/>
   </include>
   
-    <node name="camera_publisher" pkg="usb_cam" type="camera_publisher" />
   
+ 
   
 </launch>

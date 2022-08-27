@@ -143,8 +143,8 @@ int main(int argc, char ** argv)
   //   return -1;
   // }
 
-  dxl_comm_result = packetHandler->write2ByteTxRx(portHandler, AX18_1_ID, ADDR_MOOVING_SPEED, 300, &dxl_error);
-  dxl_comm_result = packetHandler->write2ByteTxRx(portHandler, AX18_2_ID, ADDR_MOOVING_SPEED, 300, &dxl_error);
+  dxl_comm_result = packetHandler->write2ByteTxRx(portHandler, 1, ADDR_MOOVING_SPEED, 200, &dxl_error);
+  dxl_comm_result = packetHandler->write2ByteTxRx(portHandler, 2, ADDR_MOOVING_SPEED, 200, &dxl_error);
 
 
   ros::init(argc, argv, "read_write_node");
