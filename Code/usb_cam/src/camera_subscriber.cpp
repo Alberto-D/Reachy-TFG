@@ -52,7 +52,7 @@ Scalar color = Scalar(255, 0, 0);
 
 // To change the mode between follow person and follow cube, 
 int image_mode = 3;
-String cube_color = "green";
+String ball_color = "green";
 
 // Sector publisher
 //ros::Publisher motor_msg_pub;
@@ -60,7 +60,7 @@ ros::Publisher motor_msg_pub;
 ros::Subscriber action_sub;
 
 int64 face_image_processing(const cv::Mat in_image);
-int64 cube_image_processing(const cv::Mat in_image);
+int64 ball_image_processing(const cv::Mat in_image);
 
 
 
@@ -74,7 +74,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg){
     if(image_mode==FOLLOW_PERSON)
       int64 sector = face_image_processing(image_raw);
     else if(image_mode== FOLLOW_CUBE )
-      int64 sector = cube_image_processing(image_raw);
+      int64 sector = ball_image_processing(image_raw);
       
   }
   catch (cv_bridge::Exception& e){
@@ -86,14 +86,15 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg){
 void actionCallback(const gb_dialog::ActionMsg::ConstPtr& msg) {
 
   image_mode = msg->mode;
-  // Comparing strings to know what to do
+  // Comparing strings to know what to do, if it is follow, set the data.
+  // If it is a motor action, send it to the motor controller.
   if(strcmp(follow, msg->action.c_str())== 0){
     // If the data is empty, the last one saved is used
     if(strlen(msg->data.c_str())>1)
-      cube_color = msg->data;
-    ROS_INFO("El modo es     [%s] color es %s", follow, cube_color.c_str());
+      ball_color = msg->data;
+    ROS_INFO("El modo es %s, color es %s", follow, ball_color.c_str());
   }else{
-    ROS_INFO("El modo es     [%s]", msg->action.c_str());
+    ROS_INFO("El modo es %s", msg->action.c_str());
     usb_cam::MotorMsg msg2;
     msg2.motor_action =  msg->action.c_str();
     motor_msg_pub.publish(msg2);
@@ -105,10 +106,10 @@ int main(int argc, char **argv){
 
   //For face detection
   faceCascadePath = "/home/alberto/catkin_ws/src/usb_cam/cascade/haarcascade_frontalface_default.xml";
+  // faceCascadePath = "/home/alberto/catkin_ws/src/usb_cam/cascade/haarcascade_frontalface_default.xml";
   faceCascade.load( faceCascadePath );
   // Show image
-      cv::namedWindow("out_image");
-  cv::startWindowThread();
+    cv::startWindowThread();
 
   ros::init(argc, argv, "image_listener_node");
   ros::NodeHandle nh;
@@ -139,8 +140,9 @@ int64 face_image_processing(const cv::Mat in_image){
   cvtColor( out_image, frameGray, COLOR_BGR2GRAY );
    Size minSize;
   minSize.height = 30;
-  minSize.width = 30;
-  faceCascade.detectMultiScale(frameGray, faces,1.2,3,0,minSize);
+  minSize.width = 20;
+  faceCascade.detectMultiScale(frameGray, faces,1.5,8,0,minSize);
+  
 
   Point center;
   int64 x_sector = -100;
@@ -150,18 +152,25 @@ int64 face_image_processing(const cv::Mat in_image){
 
   int biggest_face;
   double maxArea = 0.0;
-  // Selects only the biggest face to avoid error in lighting
+  // Selects only the biggest face to avoid errors in lighting
   for (int i = 0; i< faces.size(); i++){
-    int area = faces[i].height;
+    Point a;
+    a.x = faces[i].x;
+    a.y =faces[i].y;
+    Point b;
+    b.x = faces[i].x+faces[i].width;
+    b.y = faces[i].y +faces[i].height;
+    cv::rectangle(out_image,a , b, cv::Scalar(0, 255, 0));
+
+    int area = faces[i].area() ;
     if (area > maxArea){
       maxArea = area;
       biggest_face = i;
     }
   }
 
-  //Get the centerof the face  and detect the sector, only if it has detectted a face
+  //Get the center of the face  and detect the sector, only if it has detectted a face
   if(faces.size() > 0){
-    
     x2 = faces[biggest_face].x + faces[biggest_face].width/2;
     y2 = faces[biggest_face].y + faces[biggest_face].height/2;
     center.x = x2;
@@ -181,8 +190,6 @@ int64 face_image_processing(const cv::Mat in_image){
     }else{
       y_sector = 3;
     }
-    circle( out_image, center, 5, color, 3, 8, 0 );
-
   // motor_msg_pub.publish(msg);
     usb_cam::MotorMsg msg;
     msg.x_sector = x_sector;
@@ -195,16 +202,15 @@ int64 face_image_processing(const cv::Mat in_image){
     motor_msg_pub.publish(msg);
   }
   // Show image in a different window
-      cv::imshow("out_image",out_image);
-      cv::waitKey(3);
+    cv::imshow("out_image",out_image);
+      //cv::waitKey(3);
   return 1;
 }
 
 
-// Cube image procesing
+// Ball image procesing
 
 
-const String window_detection_name = "Object Detection";
 
 // Limits to detect the colors
 cv::Scalar yellowLow = cv::Scalar(20, 100, 100);
@@ -221,91 +227,76 @@ cv::Scalar greenHigh = cv::Scalar(70, 255, 255);
 
 
 
-int64 cube_image_processing(const cv::Mat in_image){
+int64 ball_image_processing(const cv::Mat in_image){
   // Create output image
   cv::Mat out_image = in_image.clone();
   // Detect faces
   Mat frameGray;
   std::vector<Rect> faces;
 
-  namedWindow(window_detection_name);
   cv::Scalar ScalarLow = blueLow;
   cv::Scalar ScalarHigh = blueHigh;
 
   // Select the color of the cube to follow
-  if(strcmp("yellow", cube_color.c_str())== 0){
+  if(strcmp("yellow", ball_color.c_str())== 0){
     ScalarLow = yellowLow;
     ScalarHigh = yellowHigh;
-  }else if(strcmp("blue", cube_color.c_str())== 0){
+  }else if(strcmp("blue", ball_color.c_str())== 0){
     ScalarLow = blueLow;
     ScalarHigh = blueHigh;
-  } else if(strcmp("green", cube_color.c_str())== 0){
+  } else if(strcmp("green", ball_color.c_str())== 0){
     ScalarLow = greenLow;
     ScalarHigh = greenHigh;
-  }else if(strcmp("red", cube_color.c_str())== 0){
+  }else if(strcmp("red", ball_color.c_str())== 0){
     ScalarLow = redLow;
     ScalarHigh = redHigh;
   }else{return 0;}
 
-  Mat frame, frame_HSV, frame_threshold;
+  Mat frame, frame_HSV, frame_threshold,threshold_copy ;
   // Convert from BGR to HSV colorspace
   cvtColor(in_image, frame_HSV, COLOR_BGR2HSV);
   // Detect the object based on HSV Range Values
   inRange(frame_HSV, ScalarLow, ScalarHigh, frame_threshold);
-  // Show the frames
-  imshow(window_detection_name, frame_threshold);
-
-  // detect the contours on the binary image using cv2.CHAIN_APPROX_NONE
-	vector<vector<Point>> contours;
-
-	vector<Vec4i> hierarchy;
-
-	findContours(frame_threshold, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-  ROS_INFO("Hay  %ld countornos ", contours.size());
-
-  Mat result;
-  int savedContour = -1;
-  double maxArea = 0.0;
-  // Selects only the biggest contour to avoid error in lighting
-  for (int i = 0; i< contours.size(); i++){
-    double area = contourArea(contours[i]);
-    // The area vaires must be  150 and 10000 to avoid false detections
-      if((150 < int(area))&&(int(area)<10000)){
-      if (area > maxArea){
-        maxArea = area;
-        savedContour = i;
+  threshold_copy = frame_threshold.clone();
+  uchar zero = 0;
+// Creates a new image wit the selected colour objets and their surroundings to use in circle detection.
+  for( int i = 0; i< frame_threshold.rows; i++){
+    for( int j = 0; j< frame_threshold.cols ; j++){
+      if(frame_threshold.at<uchar>(i,j) != zero){
+       rectangle(threshold_copy, Point(j-3,i-3),Point(j+3,i+3), Scalar(255, 255, 255), FILLED);
       }
     }
   }
-  if(contours.size()==0){
-      //gb_dialog::ExampleDF forwarder;
+  //imshow("threshold", threshold_copy);
 
-    String a = "no cube";
-    //forwarder.say(a);
-         
-  }
+  vector<Vec3f> circles;
+  Mat gray;
+  Mat circles_src = in_image.clone();
+  cvtColor(circles_src, gray, COLOR_BGR2GRAY);
+  medianBlur(gray, gray, 3);
 
-  if((150 < int(maxArea))&&(int(maxArea)<10000)){
-    ROS_INFO("max area es  %d countornos ", int(maxArea)); 
+  Mat outputMat;
+  gray.copyTo(outputMat, threshold_copy);
+  //imshow("out", outputMat);
+
+  HoughCircles(outputMat, circles, HOUGH_GRADIENT, 1, gray.rows/16, 200, 20, 15, 50 );  // runs the actual detection
+
+  int64 x_sector = -100;
+  int64 y_sector = -100;
+  int x2 = -1;
+  int y2 = -1;
+
+  if (circles.size() > 0 ){
     
+    Vec3i c = circles[0];
+    Point center = Point(c[0], c[1]);
+    x2 = c[0];
+    y2 = c[1];
+    circle( out_image, center, 1, Scalar(0,100,100), 3, LINE_AA);
+    // circle outline
+    int radius = c[2];
+    circle( out_image, center, radius, Scalar(0,0,0), 3, LINE_AA);
 
-    //Create mask
-    drawContours(out_image, contours, savedContour, Scalar(0, 255, 0), 2);
-
-
-    Point center;
-    int64 x_sector = -100;
-    int64 y_sector = -100;
-
-    contours[savedContour];
-
-    //Draw circles and detect sector
-    int x2 = contours[savedContour][0].x ;
-    int y2 = contours[savedContour][0].y ;
-    center.x = x2;
-    center.y = y2;
-
-    
     if((0<x2)&&(x2<out_image.cols/3)){
       x_sector = 1;
     }else if((out_image.cols/3<x2)&&(x2<2*out_image.cols/3)){
@@ -321,8 +312,6 @@ int64 cube_image_processing(const cv::Mat in_image){
       y_sector = 3;
     }
 
-    circle( out_image, center, 15, color, 3, 8, 0 );
-
     // motor_msg_pub.publish(msg);
     usb_cam::MotorMsg msg;
     msg.x_sector = x_sector;
@@ -333,11 +322,10 @@ int64 cube_image_processing(const cv::Mat in_image){
     msg.motor_action = "follow";
 
     motor_msg_pub.publish(msg);
-  }
 
-  // Show image in a different window
-      cv::imshow("out_image",out_image);
-      cv::waitKey(3);
+  }
+      cv::imshow("out",out_image);
+      //cv::waitKey(3);
   return 1;
 }
 

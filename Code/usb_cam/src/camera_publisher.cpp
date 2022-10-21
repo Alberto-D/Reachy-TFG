@@ -131,6 +131,7 @@ public:
       sensor_msgs::CameraInfo camera_info;
       camera_info.header.frame_id = img_.header.frame_id;
       camera_info.width = image_width_;
+      
       camera_info.height = image_height_;
       cinfo_->setCameraInfo(camera_info);
     }

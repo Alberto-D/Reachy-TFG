@@ -34,6 +34,19 @@ int get_position( int id){
     }
 }
 
+int get_increment( int point_a){
+   ROS_INFO("Mide %d", abs(320 - point_a));
+   int step = 0;
+   if (abs(320 - point_a) > 60){
+    step = 15;
+  }
+  if (abs(320 - point_a) > 100){
+    step = 30;
+  }
+    return step;
+
+}
+
 void sector_movement(const usb_cam::MotorMsg::ConstPtr& msg  ){
   int x_sector = msg->x_sector;
   int y_sector = msg->y_sector;
@@ -45,28 +58,35 @@ void sector_movement(const usb_cam::MotorMsg::ConstPtr& msg  ){
   dynamixel_sdk_examples::SetPosition position_msg_x;
   dynamixel_sdk_examples::SetPosition position_msg_y;
 
-  if(x_sector==1){
-    position_msg_x.id = 1;
-    position_msg_x.position = position_x+15;
-    position_pub.publish(position_msg_x);
-   }else if(x_sector==3){
-    dynamixel_sdk_examples::SetPosition msg;
-    position_msg_x.id = 1;
-    position_msg_x.position = position_x-15;
-   position_pub.publish(position_msg_x);
-  }
+  //ROS_INFO("X en pantalla %d y en pantalla %d, posicion del motor x %d posicion del motor y %d",msg->x, msg->y, position_x, position_y);
 
-  if(y_sector==1){
-    position_msg_y.id = 2;
-    position_msg_y.position = position_y-15;
-    ROS_INFO("Mando motor a %d",position_msg_y.position);
-    position_pub.publish(position_msg_y);
-  }else if(y_sector==3){
-    dynamixel_sdk_examples::SetPosition msg;
-    position_msg_y.id = 2;
-    position_msg_y.position = position_y+15;
-    position_pub.publish(position_msg_y);
-  }
+  position_msg_x.id = 1;
+  position_msg_x.position = position_x+(320 - msg->x)*0.3;
+  if( abs(position_x - position_msg_x.position) > 20 )
+    position_pub.publish(position_msg_x);
+  ROS_INFO("Lo muevo de %d a  %d distancia es %d ",position_x, position_msg_x.position,abs(position_x - position_msg_x.position) );
+
+  // if(msg->x-320 < 0){
+  //   position_msg_x.id = 1;
+  //   position_msg_x.position = position_x+get_increment(msg->x);
+  //   position_pub.publish(position_msg_x);
+  //  }else{
+  //   position_msg_x.id = 1;
+  //   position_msg_x.position = position_x-get_increment(msg->x);
+  //  position_pub.publish(position_msg_x);
+  // }
+
+  // if(y_sector==1){
+  //   position_msg_y.id = 2;
+  //   position_msg_y.position = position_y-15;
+  //   ROS_INFO("Mando motor a %d",position_msg_y.position);
+  //   position_pub.publish(position_msg_y);
+  // }else if(y_sector==3){
+  //   dynamixel_sdk_examples::SetPosition msg;
+  //   position_msg_y.id = 2;
+  //   position_msg_y.position = position_y+15;
+  //   position_pub.publish(position_msg_y);
+  // }
 
 }
 
@@ -79,7 +99,6 @@ void motor_msg_Callback(const usb_cam::MotorMsg::ConstPtr& msg) {
 
   }
   // Control for different actions
-
   //Deny
   else if(strcmp("deny", msg->motor_action.c_str())== 0){
     dynamixel_sdk_examples::SetPosition position_msg;

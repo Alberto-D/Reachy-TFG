@@ -69,7 +69,7 @@ class ExampleDF: public DialogInterface{
       this->registerCallback(std::bind(&ExampleDF::welcomeIntentCB, this, ph::_1),"Default Welcome Intent");
       this->registerCallback(std::bind(&ExampleDF::byeCB, this, ph::_1),"bye");
       this->registerCallback(std::bind(&ExampleDF::follow_personCB, this, ph::_1),"Follow person");
-      this->registerCallback(std::bind(&ExampleDF::follow_cubeCB, this, ph::_1),"Follow cube");
+      this->registerCallback(std::bind(&ExampleDF::follow_ballCB, this, ph::_1),"Follow ball");
       this->registerCallback(std::bind(&ExampleDF::talk_modeCB, this, ph::_1),"Lets talk");
       this->registerCallback(std::bind(&ExampleDF::question_aliveCB, this, ph::_1),"Question alive");
       this->registerCallback(std::bind(&ExampleDF::question_robotCB, this, ph::_1),"Question robot");
@@ -81,6 +81,7 @@ class ExampleDF: public DialogInterface{
       this->registerCallback(std::bind(&ExampleDF::How_questionCB, this, ph::_1),"How are you");
       this->registerCallback(std::bind(&ExampleDF::Where_questionCB, this, ph::_1),"Where are you");
       this->registerCallback(std::bind(&ExampleDF::FactCB, this, ph::_1),"Facts");
+      //this->registerCallback(std::bind(&ExampleDF::BuyCB, this, ph::_1),"Buy");
       
       this->registerCallback(std::bind(&ExampleDF::SadCB, this, ph::_1),"Sad");
       this->registerCallback(std::bind(&ExampleDF::HappyCB, this, ph::_1),"Happy");
@@ -124,6 +125,7 @@ class ExampleDF: public DialogInterface{
       ROS_INFO("[ExampleDF] FactCB: intent [%s]", result.intent.c_str());
       speak(result.fulfillment_text);
     }
+    
 
     void Time_questionCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("[ExampleDF] welcomeIntentCB: intent [%s]", result.intent.c_str());
@@ -162,7 +164,7 @@ class ExampleDF: public DialogInterface{
       speak(result.fulfillment_text);
       actual_mode = msg.mode;
     }
-    void follow_cubeCB(dialogflow_ros_msgs::DialogflowResult result){
+    void follow_ballCB(dialogflow_ros_msgs::DialogflowResult result){
       ROS_INFO("[Follow cube] following  [%s]", result.intent.c_str());
       gb_dialog::ActionMsg msg;
       auto data =  result.parameters[0].value[0];
@@ -246,10 +248,13 @@ int main(int argc, char** argv){
   ros::NodeHandle action_node;
   action_pub = action_node.advertise<gb_dialog::ActionMsg>("action", 1000);
 
+
+      
   while (ros::ok()) {
     forwarder.listen();
     ros::spinOnce();
     loop_rate.sleep();
+
   }
   return 0;
 }

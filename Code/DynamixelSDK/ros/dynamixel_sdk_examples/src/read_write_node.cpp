@@ -147,6 +147,9 @@ int main(int argc, char ** argv)
   dxl_comm_result = packetHandler->write2ByteTxRx(portHandler, 2, ADDR_MOOVING_SPEED, 200, &dxl_error);
 
 
+
+
+
   ros::init(argc, argv, "read_write_node");
   ros::NodeHandle nh;
   ros::ServiceServer get_position_srv = nh.advertiseService("/get_position", getPresentPositionCallback);
