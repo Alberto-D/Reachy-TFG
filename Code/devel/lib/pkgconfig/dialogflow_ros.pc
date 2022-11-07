@@ -1,0 +1,8 @@
+prefix=/home/alberto/catkin_ws/devel
+
+Name: dialogflow_ros
+Description: Description of dialogflow_ros
+Version: 0.1.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

@@ -1,0 +1,2 @@
+DynamixelSDK/ros/dynamixel_sdk:DynamixelSDK/ros/dynamixel_sdk_examples:audio_common/audio_capture:audio_common/audio_common:audio_common/audio_common_msgs:audio_common/audio_play:audio_common/sound_play:dialog/dialogflow_ros/dialogflow_ros:dialog/dialogflow_ros/dialogflow_ros_msgs:dialog/gb_dialog/dialog_gui:dialog/gb_dialog/gb_dialog:usb_cam
+-DCATKIN_DEVEL_PREFIX=/home/alberto/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/alberto/catkin_ws/install -G Unix Makefiles

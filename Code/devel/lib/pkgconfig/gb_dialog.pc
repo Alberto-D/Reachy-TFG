@@ -1,0 +1,8 @@
+prefix=/home/alberto/catkin_ws/devel
+
+Name: gb_dialog
+Description: Description of gb_dialog
+Version: 0.0.1
+Cflags: -I/home/alberto/catkin_ws/devel/include -I/home/alberto/catkin_ws/src/dialog/gb_dialog/gb_dialog/include
+Libs: -L${prefix}/lib -lgb_dialog
+Requires: roscpp dialogflow_ros_msgs actionlib_msgs

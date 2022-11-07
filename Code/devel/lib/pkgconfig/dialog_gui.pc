@@ -1,0 +1,8 @@
+prefix=/home/alberto/catkin_ws/devel
+
+Name: dialog_gui
+Description: Description of dialog_gui
+Version: 0.0.1
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

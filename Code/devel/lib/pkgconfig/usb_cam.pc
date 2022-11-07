@@ -1,0 +1,8 @@
+prefix=/home/alberto/catkin_ws/devel
+
+Name: usb_cam
+Description: Description of usb_cam
+Version: 0.3.6
+Cflags: -I/home/alberto/catkin_ws/devel/include -I/home/alberto/catkin_ws/src/usb_cam/include
+Libs: -L${prefix}/lib -lusb_cam
+Requires: roscpp dialogflow_ros_msgs actionlib_msgs
