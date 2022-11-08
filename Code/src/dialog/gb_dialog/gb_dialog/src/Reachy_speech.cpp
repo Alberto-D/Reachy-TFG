@@ -62,29 +62,29 @@ int actual_mode = 0;
 namespace ph = std::placeholders;
 
 namespace gb_dialog{
-class ExampleDF: public DialogInterface{
+class ReachyDF: public DialogInterface{
   public:
-    ExampleDF(): nh_(){
-      this->registerCallback(std::bind(&ExampleDF::noIntentCB, this, ph::_1));
-      this->registerCallback(std::bind(&ExampleDF::welcomeIntentCB, this, ph::_1),"Default Welcome Intent");
-      this->registerCallback(std::bind(&ExampleDF::byeCB, this, ph::_1),"bye");
-      this->registerCallback(std::bind(&ExampleDF::follow_personCB, this, ph::_1),"Follow person");
-      this->registerCallback(std::bind(&ExampleDF::follow_ballCB, this, ph::_1),"Follow ball");
-      this->registerCallback(std::bind(&ExampleDF::talk_modeCB, this, ph::_1),"Lets talk");
-      this->registerCallback(std::bind(&ExampleDF::question_aliveCB, this, ph::_1),"Question alive");
-      this->registerCallback(std::bind(&ExampleDF::question_robotCB, this, ph::_1),"Question robot");
-      this->registerCallback(std::bind(&ExampleDF::position_leftCB, this, ph::_1),"Position left");
-      this->registerCallback(std::bind(&ExampleDF::position_rightCB, this, ph::_1),"Position right");
+    ReachyDF(): nh_(){
+      this->registerCallback(std::bind(&ReachyDF::noIntentCB, this, ph::_1));
+      this->registerCallback(std::bind(&ReachyDF::welcomeIntentCB, this, ph::_1),"Default Welcome Intent");
+      this->registerCallback(std::bind(&ReachyDF::byeCB, this, ph::_1),"bye");
+      this->registerCallback(std::bind(&ReachyDF::follow_personCB, this, ph::_1),"Follow person");
+      this->registerCallback(std::bind(&ReachyDF::follow_ballCB, this, ph::_1),"Follow ball");
+      this->registerCallback(std::bind(&ReachyDF::talk_modeCB, this, ph::_1),"Lets talk");
+      this->registerCallback(std::bind(&ReachyDF::question_aliveCB, this, ph::_1),"Question alive");
+      this->registerCallback(std::bind(&ReachyDF::question_robotCB, this, ph::_1),"Question robot");
+      this->registerCallback(std::bind(&ReachyDF::position_leftCB, this, ph::_1),"Position left");
+      this->registerCallback(std::bind(&ReachyDF::position_rightCB, this, ph::_1),"Position right");
 
-      this->registerCallback(std::bind(&ExampleDF::jokeCB, this, ph::_1),"Joke");
-      this->registerCallback(std::bind(&ExampleDF::Time_questionCB, this, ph::_1),"Time");
-      this->registerCallback(std::bind(&ExampleDF::How_questionCB, this, ph::_1),"How are you");
-      this->registerCallback(std::bind(&ExampleDF::Where_questionCB, this, ph::_1),"Where are you");
-      this->registerCallback(std::bind(&ExampleDF::FactCB, this, ph::_1),"Facts");
-      //this->registerCallback(std::bind(&ExampleDF::BuyCB, this, ph::_1),"Buy");
+      this->registerCallback(std::bind(&ReachyDF::jokeCB, this, ph::_1),"Joke");
+      this->registerCallback(std::bind(&ReachyDF::Time_questionCB, this, ph::_1),"Time");
+      this->registerCallback(std::bind(&ReachyDF::How_questionCB, this, ph::_1),"How are you");
+      this->registerCallback(std::bind(&ReachyDF::Where_questionCB, this, ph::_1),"Where are you");
+      this->registerCallback(std::bind(&ReachyDF::FactCB, this, ph::_1),"Facts");
+      //this->registerCallback(std::bind(&ReachyDF::BuyCB, this, ph::_1),"Buy");
       
-      this->registerCallback(std::bind(&ExampleDF::SadCB, this, ph::_1),"Sad");
-      this->registerCallback(std::bind(&ExampleDF::HappyCB, this, ph::_1),"Happy");
+      this->registerCallback(std::bind(&ReachyDF::SadCB, this, ph::_1),"Sad");
+      this->registerCallback(std::bind(&ReachyDF::HappyCB, this, ph::_1),"Happy");
     }
 
 
@@ -94,7 +94,7 @@ class ExampleDF: public DialogInterface{
       msg.action = "sad";
       action_pub.publish(msg);
       actual_mode = msg.mode;
-      ROS_INFO("[ExampleDF] SadCB: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] SadCB: intent [%s]", result.intent.c_str());
       speak(result.fulfillment_text);
     }
     void HappyCB(dialogflow_ros_msgs::DialogflowResult result){
@@ -103,37 +103,37 @@ class ExampleDF: public DialogInterface{
       msg.action = "happy";
       action_pub.publish(msg);
       actual_mode = msg.mode;
-      ROS_INFO("[ExampleDF] HappyCB: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] HappyCB: intent [%s]", result.intent.c_str());
       speak(result.fulfillment_text);
     }
 
 
     void noIntentCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] noIntentCB: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] noIntentCB: intent [%s]", result.intent.c_str());
     }
     void How_questionCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] how: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] how: intent [%s]", result.intent.c_str());
       speak(result.fulfillment_text);
     }
     void Where_questionCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] how: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] how: intent [%s]", result.intent.c_str());
       speak(result.fulfillment_text);
     }
     void FactCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] FactCB: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] FactCB: intent [%s]", result.intent.c_str());
       speak(result.fulfillment_text);
     }
     
 
     void Time_questionCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] welcomeIntentCB: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] welcomeIntentCB: intent [%s]", result.intent.c_str());
       time_t now = time(0);
       tm *ltm = localtime(&now);
       std::string time = " It is " + std::to_string(ltm->tm_hour) + "hours and " + std::to_string(ltm->tm_min) + " minutes";
       speak(time);
     }
     void welcomeIntentCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] welcomeIntentCB: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] welcomeIntentCB: intent [%s]", result.intent.c_str());
       gb_dialog::ActionMsg msg;
       msg.mode = BYE;
       msg.action = "on";
@@ -143,7 +143,7 @@ class ExampleDF: public DialogInterface{
       actual_mode = msg.mode;
     }
     void byeCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] bye: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] bye: intent [%s]", result.intent.c_str());
       gb_dialog::ActionMsg msg;
       msg.mode = BYE;
       msg.action = "off";
@@ -174,7 +174,7 @@ class ExampleDF: public DialogInterface{
       actual_mode = msg.mode;
     }
     void talk_modeCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] talking: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] talking: intent [%s]", result.intent.c_str());
       gb_dialog::ActionMsg msg;
       msg.mode = TALK_MODE;
       action_pub.publish(msg);
@@ -224,7 +224,7 @@ class ExampleDF: public DialogInterface{
     }
   
     void jokeCB(dialogflow_ros_msgs::DialogflowResult result){
-      ROS_INFO("[ExampleDF] joke: intent [%s]", result.intent.c_str());
+      ROS_INFO("[ReachyDF] joke: intent [%s]", result.intent.c_str());
       gb_dialog::ActionMsg msg;
       msg.mode = TALK_MODE;
       msg.action = "think";
@@ -241,7 +241,7 @@ class ExampleDF: public DialogInterface{
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "Reachy_speech_node");
-  gb_dialog::ExampleDF forwarder;
+  gb_dialog::ReachyDF forwarder;
   ros::Rate loop_rate(10);
   ros::NodeHandle action_node;
   action_pub = action_node.advertise<gb_dialog::ActionMsg>("action", 1000);

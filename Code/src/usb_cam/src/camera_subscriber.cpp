@@ -201,7 +201,7 @@ int64 face_image_processing(const cv::Mat in_image){
     motor_msg_pub.publish(msg);
   }
   // Show image in a different window
-    cv::imshow("out",out_image);
+    //cv::imshow("out",out_image);
       //cv::waitKey(3);
   return 1;
 }
@@ -353,7 +353,7 @@ int64 ball_image_processing(const cv::Mat in_image){
     }
     
   }
-      cv::imshow("out",out_image);
+      //cv::imshow("out",out_image);
       //cv::waitKey(3);
   return 1;
 }
