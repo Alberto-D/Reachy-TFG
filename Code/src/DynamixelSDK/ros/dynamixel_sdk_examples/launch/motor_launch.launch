@@ -1,3 +1,0 @@
-<launch>
-  <node name="read_write_node" pkg="dynamixel_sdk_examples" type="read_write_node" />
-</launch>

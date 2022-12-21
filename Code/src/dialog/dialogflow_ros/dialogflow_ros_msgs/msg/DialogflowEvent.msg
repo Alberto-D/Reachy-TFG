@@ -1,2 +1,0 @@
-string event_name
-DialogflowParameter[] parameters

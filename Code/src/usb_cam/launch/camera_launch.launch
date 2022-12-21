@@ -1,5 +1,0 @@
-<launch>
-  <node name="camera_publisher" pkg="usb_cam" type="camera_publisher" />
-  <node name="camera_subscriber" pkg="usb_cam" type="camera_subscriber" />
-  
-</launch>

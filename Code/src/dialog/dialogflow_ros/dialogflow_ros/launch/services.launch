@@ -1,3 +1,0 @@
-<launch>
-    <node name="dialogflow_service" pkg="dialogflow_ros" type="detect_intent_service.py" output="screen"/>
-</launch>
