@@ -1,0 +1,18 @@
+repositories:
+  dialogflow_ros:
+    type: git
+    url: https://github.com/jginesclavero/dialogflow_ros.git
+    version: master
+  gb_dialog:
+    type: git
+    url: https://github.com/Alberto-D/gb_dialog.git
+    version: master
+  DynamixelSDK:
+    type: git
+    url: https://github.com/Alberto-D/DynamixelSDK.git
+    version: dashing-devel
+  usb_cam:
+    type: git
+    url: https://github.com/Alberto-D/usb_cam.git
+    version: master
+    
